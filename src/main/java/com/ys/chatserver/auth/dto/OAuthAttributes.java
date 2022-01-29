@@ -1,4 +1,4 @@
-package com.ys.chatserver.config.auth.dto;
+package com.ys.chatserver.auth.dto;
 
 import com.ys.chatserver.domain.user.Role;
 import com.ys.chatserver.domain.user.User;

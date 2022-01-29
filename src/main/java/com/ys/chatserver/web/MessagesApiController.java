@@ -14,6 +14,8 @@ public class MessagesApiController {
 
     @PostMapping("/api/v1/messages")
     public Long save(@RequestBody MessagesSaveRequestDto requestDto) {
+
+        System.out.println("TEST");
         return messagesService.save(requestDto);
     }
 
