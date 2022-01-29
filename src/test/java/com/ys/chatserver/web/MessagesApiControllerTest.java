@@ -1,22 +1,31 @@
 package com.ys.chatserver.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ys.chatserver.domain.messages.Messages;
 import com.ys.chatserver.domain.messages.MessagesRepository;
 import com.ys.chatserver.web.dto.MessagesSaveRequestDto;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -26,10 +35,20 @@ public class MessagesApiControllerTest {
     private int port;
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private MessagesRepository messagesRepository;
 
     @Autowired
-    private MessagesRepository messagesRepository;
+    private WebApplicationContext context;
+
+    private MockMvc mvc;
+
+    @Before
+    public void setup() {
+        mvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
 
     @After
     public void tearDown() throws Exception {
@@ -37,6 +56,7 @@ public class MessagesApiControllerTest {
     }
 
     @Test
+    @WithMockUser(roles="USER")
     public void Messages_등록된다() throws Exception {
         // given
         String content = "content";
@@ -48,16 +68,18 @@ public class MessagesApiControllerTest {
         String url = "http://localhost:" + port + "/api/v1/messages";
 
         // when
-        ResponseEntity<Long> responseEntity = restTemplate.postForEntity(url, requestDto, Long.class);
+        mvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
 
         // then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getBody()).isGreaterThan(0L);
         List<Messages> all = messagesRepository.findAll();
         assertThat(all.get(0).getContent()).isEqualTo(content);
     }
 
     @Test
+    @WithMockUser(roles="USER")
     public void Messages_삭제된다() throws Exception {
         // given
         String content = "content";
@@ -67,19 +89,19 @@ public class MessagesApiControllerTest {
                 .build();
 
         String postUrl = "http://localhost:" + port + "/api/v1/messages";
+        mvc.perform(post(postUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(requestDto)));
 
-        ResponseEntity<Long> responseEntity = restTemplate.postForEntity(postUrl, requestDto, Long.class);
         List<Messages> all = messagesRepository.findAll();
         Long id = all.get(0).getId();
 
         String deleteUrl = postUrl + "/" + id;
 
         // when
-        restTemplate.delete(deleteUrl);
+        mvc.perform(delete(deleteUrl)).andExpect(status().isOk());
 
         // then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getBody()).isGreaterThan(0L);
         all = messagesRepository.findAll();
         assertThat(all.size()).isEqualTo(0);
     }

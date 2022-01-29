@@ -26,7 +26,9 @@ dependencies {
     implementation 'junit:junit:4.13.1'
     implementation 'com.h2database:h2'
     compileOnly 'org.projectlombok:lombok'
+    compileOnly 'org.springframework.session:spring-session-jdbc'
     annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.security:spring-security-test'
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
