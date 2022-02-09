@@ -75,9 +75,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         Role roleType = Role.USER;
 
         Date now = new Date();
+
+        String id = userInfo.getId();
         AuthToken accessToken = tokenProvider.createAuthToken(
                 userInfo.getId(),
-                roleType.getKey(),
+                roleType.getCode(),
                 new Date(now.getTime() + appProperties.getAuth().getTokenExpiry())
         );
 

@@ -1,6 +1,8 @@
 package com.ys.chatserver.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ys.chatserver.config.token.AuthToken;
+import com.ys.chatserver.config.token.AuthTokenProvider;
 import com.ys.chatserver.domain.messages.Messages;
 import com.ys.chatserver.domain.messages.MessagesRepository;
 import com.ys.chatserver.web.dto.MessagesSaveRequestDto;
@@ -10,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -40,6 +42,9 @@ public class MessagesApiControllerTest {
     @Autowired
     private WebApplicationContext context;
 
+    @Autowired
+    private AuthTokenProvider tokenProvider;
+
     private MockMvc mvc;
 
     @Before
@@ -58,6 +63,15 @@ public class MessagesApiControllerTest {
     @Test
     @WithMockUser(roles="USER")
     public void Messages_등록된다() throws Exception {
+
+        Date now = new Date();
+
+        AuthToken accessToken = tokenProvider.createAuthToken(
+                "100710616337397520819",
+                "USER",
+                new Date(now.getTime() + 1800000)
+        );
+
         // given
         String content = "content";
         MessagesSaveRequestDto requestDto = MessagesSaveRequestDto.builder()
@@ -67,8 +81,10 @@ public class MessagesApiControllerTest {
 
         String url = "http://localhost:" + port + "/api/v1/messages";
 
+        String s = new ObjectMapper().writeValueAsString(requestDto);
         // when
         mvc.perform(post(url)
+                .header("Authorization", "Bearer " + accessToken.getToken())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(requestDto)))
                 .andExpect(status().isOk());

@@ -1,6 +1,5 @@
 package com.ys.chatserver.auth;
 
-import com.ys.chatserver.domain.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
