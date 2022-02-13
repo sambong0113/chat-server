@@ -35,7 +35,6 @@ import java.util.Arrays;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final AppProperties appProperties;
-    private final CorsProperties corsProperties;
     private final AuthTokenProvider tokenProvider;
     private final CustomUserDetailsService userDetailsService;
     private final CustomOAuth2UserService oAuth2UserService;
@@ -84,7 +83,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .userService(oAuth2UserService)
             .and()
                 .successHandler(oAuth2AuthenticationSuccessHandler())
-                .failureHandler(oAuth2AuthenticationFailureHandler());
+                .failureHandler(oAuth2AuthenticationFailureHandler())
+            .and()
+                .headers()
+                .frameOptions()
+                .sameOrigin();
 
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }

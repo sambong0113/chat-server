@@ -17,6 +17,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -42,13 +45,11 @@ public class MessagesApiControllerTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Autowired
-    private AuthTokenProvider tokenProvider;
-
     private MockMvc mvc;
 
     @Before
     public void setup() {
+
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
@@ -64,14 +65,6 @@ public class MessagesApiControllerTest {
     @WithMockUser(roles="USER")
     public void Messages_등록된다() throws Exception {
 
-        Date now = new Date();
-
-        AuthToken accessToken = tokenProvider.createAuthToken(
-                "100710616337397520819",
-                "USER",
-                new Date(now.getTime() + 1800000)
-        );
-
         // given
         String content = "content";
         MessagesSaveRequestDto requestDto = MessagesSaveRequestDto.builder()
@@ -84,7 +77,6 @@ public class MessagesApiControllerTest {
         String s = new ObjectMapper().writeValueAsString(requestDto);
         // when
         mvc.perform(post(url)
-                .header("Authorization", "Bearer " + accessToken.getToken())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
