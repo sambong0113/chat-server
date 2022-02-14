@@ -8,6 +8,7 @@ import com.ys.chatserver.domain.user.Role;
 import com.ys.chatserver.domain.user.User;
 import com.ys.chatserver.domain.user.UserPrincipal;
 import com.ys.chatserver.domain.user.UserRepository;
+import com.ys.chatserver.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Service;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+
+    private final UserService userService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -71,7 +74,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 Role.USER
         );
 
-        return userRepository.saveAndFlush(user);
+        return userService.createUser(user);
     }
 
     private User updateUser(User user, OAuth2UserInfo userInfo) {
