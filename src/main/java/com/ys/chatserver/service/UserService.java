@@ -23,12 +23,14 @@ public class UserService {
     @Transactional
     public User createUser(User user) {
 
+        userRepository.save(user);
+
         Friends friends = Friends.builder()
                 .id(user.getUserSeq())
                 .build();
 
         friendsRepository.save(friends);
 
-        return userRepository.save(user);
+        return user;
     }
 }
