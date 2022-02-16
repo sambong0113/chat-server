@@ -1,6 +1,5 @@
 package com.ys.chatserver.web.dto;
 
-import com.ys.chatserver.domain.friends.Friends;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,11 +14,5 @@ public class FriendsAddRequestDto {
     public FriendsAddRequestDto(Long userId, Long friendId) {
         this.userId = userId;
         this.friendId = friendId;
-    }
-
-    public Friends toEntity() {
-        return Friends.builder()
-                .id(friendId)
-                .build();
     }
 }

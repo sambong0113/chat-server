@@ -74,7 +74,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 Role.USER
         );
 
-        return userService.createUser(user);
+        return userRepository.saveAndFlush(user);
     }
 
     private User updateUser(User user, OAuth2UserInfo userInfo) {
