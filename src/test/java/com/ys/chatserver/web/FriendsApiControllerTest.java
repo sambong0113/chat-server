@@ -19,13 +19,19 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -47,7 +53,7 @@ public class FriendsApiControllerTest {
     private MockMvc mvc;
 
     private User user;
-    private User friend;
+    private User friendUser;
 
     @Before
     public void setup() {
@@ -56,7 +62,6 @@ public class FriendsApiControllerTest {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
-
 
         // given
         user = new User(
@@ -71,7 +76,7 @@ public class FriendsApiControllerTest {
         );
         userService.createUser(user);
 
-        friend = new User(
+        friendUser = new User(
                 "testFriend",
                 "testFriend",
                 "",
@@ -81,12 +86,33 @@ public class FriendsApiControllerTest {
                 ProviderType.GOOGLE,
                 Role.USER
         );
-        userService.createUser(friend);
+        userService.createUser(friendUser);
     }
 
     @After
     public void tearDown() throws Exception {
         friendsRepository.deleteAll();
+    }
+
+    @Test
+    @WithMockUser(roles="USER")
+    @Transactional
+    public void Friends_가져온다() throws Exception {
+
+        // given
+        Friends friends = friendsRepository.getById(user.getUserSeq());
+        Set<User> newFriendsSet = friends.getFriendSet().stream().collect(Collectors.toSet());
+        newFriendsSet.add(friendUser);
+        friends.setFriendSet(newFriendsSet);
+
+        friendsRepository.save(friends);
+
+        String url = "http://localhost:" + port + "/api/v1/friends/" + user.getUserSeq();
+
+        // when
+        mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.friendSet[0].name").value(friendUser.getName()));
     }
 
     @Test
@@ -98,7 +124,7 @@ public class FriendsApiControllerTest {
 
         FriendsAddRequestDto requestDto = FriendsAddRequestDto.builder()
                 .userId(user.getUserSeq())
-                .friendId(friend.getUserSeq())
+                .friendId(friendUser.getUserSeq())
                 .build();
 
         // when
@@ -111,6 +137,6 @@ public class FriendsApiControllerTest {
 
         // then
         assertThat(friends.getFriendSet().size()).isEqualTo(1);
-        assertThat(friends.getFriendSet().contains(friend.getUserSeq()));
+        assertThat(friends.getFriendSet().contains(friendUser.getUserSeq()));
     }
 }
