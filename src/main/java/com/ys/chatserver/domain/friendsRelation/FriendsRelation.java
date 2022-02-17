@@ -21,10 +21,11 @@ public class FriendsRelation extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="friends_relation_id")
+    @JoinColumn(name="from_user_seq")
     private User from;
 
     @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="to_user_seq")
     private User to;
 
     @Builder
