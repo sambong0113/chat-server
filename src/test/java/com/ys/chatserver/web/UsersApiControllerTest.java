@@ -1,46 +1,30 @@
 package com.ys.chatserver.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ys.chatserver.auth.dto.OAuth2UserInfo;
 import com.ys.chatserver.auth.dto.ProviderType;
-import com.ys.chatserver.auth.service.CustomOAuth2UserService;
 import com.ys.chatserver.config.properties.AppProperties;
 import com.ys.chatserver.config.token.AuthToken;
 import com.ys.chatserver.config.token.AuthTokenProvider;
-import com.ys.chatserver.domain.messages.Messages;
-import com.ys.chatserver.domain.messages.MessagesRepository;
 import com.ys.chatserver.domain.user.Role;
 import com.ys.chatserver.domain.user.User;
-import com.ys.chatserver.domain.user.UserPrincipal;
 import com.ys.chatserver.domain.user.UserRepository;
-import com.ys.chatserver.web.dto.MessagesSaveRequestDto;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Date;
-import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -58,9 +42,6 @@ public class UsersApiControllerTest {
 
     @Autowired
     private AuthTokenProvider tokenProvider;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
 
     @Autowired
     private AppProperties appProperties;

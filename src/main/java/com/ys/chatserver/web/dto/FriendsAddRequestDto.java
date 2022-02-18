@@ -7,12 +7,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class FriendsAddRequestDto {
-    private Long userId;
     private Long friendId;
 
     @Builder
-    public FriendsAddRequestDto(Long userId, Long friendId) {
-        this.userId = userId;
+    public FriendsAddRequestDto(Long friendId) {
         this.friendId = friendId;
     }
 }

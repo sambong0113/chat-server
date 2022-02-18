@@ -12,15 +12,14 @@ public class FriendsApiController {
 
     private final FriendsRelationService friendsRelationService;
 
-    @GetMapping("/api/v1/friends/{id}")
-    public FriendsResponseDto findById(@PathVariable Long id) {
-        return friendsRelationService.findById(id);
+    @GetMapping("/api/v1/friends")
+    public FriendsResponseDto getFriends() {
+        return friendsRelationService.getFriends();
     }
 
     @PutMapping("/api/v1/friends")
     public Long addFriend(@RequestBody FriendsAddRequestDto requestDto) {
-        Long userId = requestDto.getUserId();
         Long friendId = requestDto.getFriendId();
-        return friendsRelationService.save(userId, friendId);
+        return friendsRelationService.save(friendId);
     }
 }
