@@ -4,6 +4,7 @@ import com.ys.chatserver.auth.dto.ProviderType;
 import com.ys.chatserver.config.properties.AppProperties;
 import com.ys.chatserver.config.token.AuthToken;
 import com.ys.chatserver.config.token.AuthTokenProvider;
+import com.ys.chatserver.domain.friendsRelation.FriendsRelationRepository;
 import com.ys.chatserver.domain.user.Role;
 import com.ys.chatserver.domain.user.User;
 import com.ys.chatserver.domain.user.UserRepository;
@@ -16,8 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -38,6 +41,9 @@ public class UsersApiControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private FriendsRelationRepository friendsRelationRepository;
+
+    @Autowired
     private WebApplicationContext context;
 
     @Autowired
@@ -47,6 +53,9 @@ public class UsersApiControllerTest {
     private AppProperties appProperties;
 
     private MockMvc mvc;
+
+    private User user;
+
     @Before
     public void setup() {
 
@@ -54,19 +63,9 @@ public class UsersApiControllerTest {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        userRepository.deleteAll();
-    }
-
-
-    @Test
-    public void User_가져온다() throws Exception {
 
         // given
-        User user = new User(
+        user = new User(
                 "test",
                 "test",
                 "",
@@ -78,7 +77,18 @@ public class UsersApiControllerTest {
         );
 
         userRepository.saveAndFlush(user);
+    }
 
+    @After
+    public void tearDown() {
+        friendsRelationRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    @Test
+    public void User_가져온다() throws Exception {
+
+        // given
         Date now = new Date();
         AuthToken accessToken = tokenProvider.createAuthToken(
                 user.getUserId(),
@@ -97,5 +107,19 @@ public class UsersApiControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.body.user.name").value(user.getName()))
                 .andExpect(jsonPath("$.body.user.email").value(user.getEmail()));
+    }
+
+    @Test
+    @WithMockUser(roles="USER")
+    public void User_검색한다() throws Exception {
+
+        String url = "http://localhost:" + port + "/api/v1/users/search?email=test";
+
+        // when
+        MvcResult result = mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.body.userList.userInfoDtoList[0].name").value(user.getName()))
+                .andReturn();
+        System.out.println(result.getResponse().getContentAsString());
     }
 }
