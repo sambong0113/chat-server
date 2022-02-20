@@ -125,7 +125,6 @@ public class FriendsRelationApiControllerTest {
                 .to(friendUser)
                 .build();
 
-
         friendsRelationRepository.save(friendsRelation);
 
         String url = "http://localhost:" + port + "/api/v1/friends";
@@ -134,12 +133,10 @@ public class FriendsRelationApiControllerTest {
         mvc.perform(get(url)
                 .header("Authentication", "Bearer " + accessToken.getToken()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.friendSet[0].name").value(friendUser.getName()));
+                .andExpect(jsonPath("$.body.friends.friendSet[0].name").value(friendUser.getName()));
     }
 
     @Test
-    @WithMockUser(roles="USER")
-    @Transactional
     public void Friends_추가한다() throws Exception {
 
         String url = "http://localhost:" + port + "/api/v1/friends";

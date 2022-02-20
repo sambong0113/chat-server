@@ -1,5 +1,6 @@
 package com.ys.chatserver.web;
 
+import com.ys.chatserver.common.ApiResponse;
 import com.ys.chatserver.service.FriendsRelationService;
 import com.ys.chatserver.web.dto.FriendsAddRequestDto;
 import com.ys.chatserver.web.dto.FriendsResponseDto;
@@ -13,13 +14,13 @@ public class FriendsApiController {
     private final FriendsRelationService friendsRelationService;
 
     @GetMapping("/api/v1/friends")
-    public FriendsResponseDto getFriends() {
-        return friendsRelationService.getFriends();
+    public ApiResponse getFriends() {
+        return ApiResponse.success("friends", friendsRelationService.getFriends());
     }
 
     @PutMapping("/api/v1/friends")
-    public Long addFriend(@RequestBody FriendsAddRequestDto requestDto) {
+    public ApiResponse addFriend(@RequestBody FriendsAddRequestDto requestDto) {
         Long friendId = requestDto.getFriendId();
-        return friendsRelationService.save(friendId);
+        return ApiResponse.success("friendId", friendsRelationService.save(friendId));
     }
 }
