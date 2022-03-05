@@ -1,18 +1,18 @@
 package com.ys.chatserver.web.dto;
 
-import com.ys.chatserver.domain.messages.Messages;
+import com.ys.chatserver.domain.messages.Message;
 import lombok.Getter;
 
 @Getter
 public class MessagesResponseDto {
 
     private Long id;
-    private String content;
-    private String author;
+    private Long userId;
+    private Long chatRoomId;
 
-    public MessagesResponseDto(Messages entity) {
+    public MessagesResponseDto(Message entity) {
         this.id = entity.getId();
-        this.content = entity.getContent();
-        this.author = entity.getAuthor();
+        this.userId = entity.getUser().getUserSeq();
+        this.chatRoomId = entity.getChatRoom().getId();
     }
 }
