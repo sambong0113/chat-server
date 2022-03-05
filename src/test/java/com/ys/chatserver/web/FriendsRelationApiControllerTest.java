@@ -111,8 +111,8 @@ public class FriendsRelationApiControllerTest {
 
     @After
     public void tearDown() {
-        userRepository.deleteAll();
         friendsRelationRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -133,7 +133,7 @@ public class FriendsRelationApiControllerTest {
         mvc.perform(get(url)
                 .header("Authentication", "Bearer " + accessToken.getToken()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.body.friends.friendSet[0].name").value(friendUser.getName()));
+                .andExpect(jsonPath("$.[0].name").value(friendUser.getName()));
     }
 
     @Test

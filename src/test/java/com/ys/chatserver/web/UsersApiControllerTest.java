@@ -105,8 +105,8 @@ public class UsersApiControllerTest {
         mvc.perform(get(url)
                 .header("Authentication", "Bearer " + accessToken.getToken()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.body.user.name").value(user.getName()))
-                .andExpect(jsonPath("$.body.user.email").value(user.getEmail()));
+                .andExpect(jsonPath("$.name").value(user.getName()))
+                .andExpect(jsonPath("$.email").value(user.getEmail()));
     }
 
     @Test
@@ -118,7 +118,7 @@ public class UsersApiControllerTest {
         // when
         MvcResult result = mvc.perform(get(url))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.body.userList.userInfoDtoList[0].name").value(user.getName()))
+                .andExpect(jsonPath("$.[0].name").value(user.getName()))
                 .andReturn();
         System.out.println(result.getResponse().getContentAsString());
     }

@@ -3,12 +3,12 @@ package com.ys.chatserver.service;
 import com.ys.chatserver.domain.friendsRelation.FriendsRelation;
 import com.ys.chatserver.domain.friendsRelation.FriendsRelationRepository;
 import com.ys.chatserver.domain.user.User;
-import com.ys.chatserver.web.dto.FriendsResponseDto;
+import com.ys.chatserver.web.dto.UserInfoDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -18,22 +18,18 @@ public class FriendsRelationService {
 
     private final UserService userService;
 
-    public FriendsResponseDto getFriends() {
+    public List<UserInfoDto> getFriends() {
 
-        org.springframework.security.core.userdetails.User principal =
-                (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        User user = userService.getUser(principal.getUsername());
-        Set<FriendsRelation> entity = friendsRelationRepository.findByFromUserSeq(user.getUserSeq());
-        return new FriendsResponseDto(entity);
+        UserInfoDto user = userService.getUser();
+        return friendsRelationRepository.findByFromUserSeq(user.getUserSeq()).stream()
+                .map(FriendsRelation::getTo)
+                .map(UserInfoDto::new)
+                .collect(Collectors.toList());
     }
 
     public Long save(Long friendId) {
 
-        org.springframework.security.core.userdetails.User principal =
-                (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        User user = userService.getUser(principal.getUsername());
+        UserInfoDto user = userService.getUser();
 
         FriendsRelation entity = friendsRelationRepository.findByFromUserSeqAndToUserSeq(user.getUserSeq(), friendId);
         if (entity != null) {

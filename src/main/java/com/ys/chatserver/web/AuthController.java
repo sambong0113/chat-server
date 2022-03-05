@@ -11,8 +11,10 @@ import com.ys.chatserver.domain.user.UserRefreshToken;
 import com.ys.chatserver.domain.user.UserRefreshTokenRepository;
 import com.ys.chatserver.utils.CookieUtil;
 import com.ys.chatserver.utils.HeaderUtil;
+import com.ys.chatserver.web.dto.TokenResponseDto;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,11 +36,11 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserRefreshTokenRepository userRefreshTokenRepository;
 
-    private final static long THREE_DAYS_MSEC = 259200000;
-    private final static String REFRESH_TOKEN = "refresh_token";
+    private static final long THREE_DAYS_MSEC = 259200000;
+    private static final String REFRESH_TOKEN = "refresh_token";
 
     @PostMapping("/login")
-    public ApiResponse login(
+    public ResponseEntity<TokenResponseDto> login(
             HttpServletRequest request,
             HttpServletResponse response,
             @RequestBody AuthReqModel authReqModel
@@ -82,21 +84,27 @@ public class AuthController {
         CookieUtil.deleteCookie(request, response, REFRESH_TOKEN);
         CookieUtil.addCookie(response, REFRESH_TOKEN, refreshToken.getToken(), cookieMaxAge);
 
-        return ApiResponse.success("token", accessToken.getToken());
+
+        return ResponseEntity.ok()
+                .body(new TokenResponseDto(accessToken.getToken()));
     }
 
     @GetMapping("/refresh")
-    public ApiResponse refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<TokenResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
 
         String accessToken = HeaderUtil.getAccessToken(request);
         AuthToken authToken = tokenProvider.convertAuthToken(accessToken);
         if (!authToken.validate()) {
-           return ApiResponse.invalidAccessToken();
+           return ResponseEntity.status(500)
+                   .header(ApiResponse.FAILED_MESSAGE, ApiResponse.INVALID_REFRESH_TOKEN)
+                   .body(null);
         }
 
         Claims claims = authToken.getExpiredTokenClaims();
         if (claims == null) {
-            return ApiResponse.notExpiredTokenYet();
+           return ResponseEntity.status(500)
+                   .header(ApiResponse.FAILED_MESSAGE, ApiResponse.NOT_EXPIRED_TOKEN_YET)
+                   .body(null);
         }
 
         String userId = claims.getSubject();
@@ -109,13 +117,17 @@ public class AuthController {
         AuthToken authRefreshToken = tokenProvider.convertAuthToken(refreshToken);
 
         if (authRefreshToken.validate()) {
-            return ApiResponse.invalidRefreshToken();
+           return ResponseEntity.status(500)
+                   .header(ApiResponse.FAILED_MESSAGE, ApiResponse.INVALID_REFRESH_TOKEN)
+                   .body(null);
         }
 
         // userId refresh token 으로 DB 확인
         UserRefreshToken userRefreshToken = userRefreshTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken);
         if (userRefreshToken == null) {
-            return ApiResponse.invalidRefreshToken();
+           return ResponseEntity.status(500)
+                   .header(ApiResponse.FAILED_MESSAGE, ApiResponse.INVALID_REFRESH_TOKEN)
+                   .body(null);
         }
 
         Date now = new Date();
@@ -146,6 +158,7 @@ public class AuthController {
             CookieUtil.addCookie(response, REFRESH_TOKEN, authRefreshToken.getToken(), cookieMaxAge);
         }
 
-        return ApiResponse.success("token", newAccessToken.getToken());
+        return ResponseEntity.ok()
+                .body(new TokenResponseDto(newAccessToken.getToken()));
     }
 }

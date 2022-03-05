@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class UserInfoDto {
 
     private Long userSeq;
+    private String userId;
     private String name;
     private String email;
     private String picture;
@@ -17,6 +18,7 @@ public class UserInfoDto {
     @Builder
     public UserInfoDto(User user) {
         this.userSeq = user.getUserSeq();
+        this.userId = user.getUserId();
         this.name = user.getName();
         this.email = user.getEmail();
         this.picture = user.getEmail();
