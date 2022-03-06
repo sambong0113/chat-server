@@ -1,15 +1,18 @@
 package com.ys.chatserver.service;
 
+import com.ys.chatserver.domain.chatRoomUserInfos.ChatRoomUserInfo;
 import com.ys.chatserver.domain.chatRoomUserInfos.ChatRoomUserInfoRepository;
+import com.ys.chatserver.domain.chatRooms.ChatRoom;
 import com.ys.chatserver.domain.chatRooms.ChatRoomRepository;
 import com.ys.chatserver.domain.user.User;
+import com.ys.chatserver.web.dto.ChatCreateRequestDto;
 import com.ys.chatserver.web.dto.ChatRoomsResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -22,18 +25,40 @@ public class ChatRoomService {
 
     public List<ChatRoomsResponseDto> listChatRooms() {
 
-        org.springframework.security.core.userdetails.User principal =
-                (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        User user = userService.getUser(principal.getUsername());
+        User user = userService.getUser();
 
         return chatRoomUserInfosRepository.findByUser(user).stream()
-                .map(chatRoomUserInfo -> chatRoomsRepository.findById(chatRoomUserInfo.getId()).orElse(null))
-                .filter(Objects::nonNull)
-                .map(ChatRoomsResponseDto::new)
+                .map(chatRoomUserInfo -> {
+                    ChatRoom chatRoom = chatRoomUserInfo.getChatRoom();
+                    List<User> userList = chatRoomUserInfosRepository.findByChatRoom(chatRoom).stream()
+                            .map(ChatRoomUserInfo::getUser)
+                            .collect(Collectors.toList());
+
+                    return new ChatRoomsResponseDto(chatRoom, userList);
+                })
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public Long createChatRoom(ChatCreateRequestDto chatCreateRequestDto) {
+
+        User user = userService.getUser();
+        User other = userService.getUser(chatCreateRequestDto.getUserId());
+
+        List<User> userList = new ArrayList<>();
+        userList.add(user);
+        userList.add(other);
 
 
+        ChatRoom chatRoom = ChatRoom.builder().title(chatCreateRequestDto.getTitle()).build();
+        chatRoomsRepository.save(chatRoom);
+
+        List<ChatRoomUserInfo> userInfoList = userList.stream()
+                .map(u -> ChatRoomUserInfo.builder().chatRoom(chatRoom).user(u).build())
+                .collect(Collectors.toList());
+
+        chatRoomUserInfosRepository.saveAll(userInfoList);
+
+        return chatRoom.getId();
+    }
 }

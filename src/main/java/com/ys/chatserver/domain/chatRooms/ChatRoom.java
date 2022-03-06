@@ -1,6 +1,7 @@
 package com.ys.chatserver.domain.chatRooms;
 
 import com.ys.chatserver.domain.BaseTimeEntity;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,4 +17,9 @@ public class ChatRoom extends BaseTimeEntity {
     private Long id;
 
     private String title;
+
+    @Builder
+    public ChatRoom(String title) {
+        this.title = title;
+    }
 }
