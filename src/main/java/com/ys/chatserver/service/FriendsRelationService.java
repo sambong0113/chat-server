@@ -3,7 +3,7 @@ package com.ys.chatserver.service;
 import com.ys.chatserver.domain.friendsRelation.FriendsRelation;
 import com.ys.chatserver.domain.friendsRelation.FriendsRelationRepository;
 import com.ys.chatserver.domain.user.User;
-import com.ys.chatserver.web.dto.UserInfoDto;
+import com.ys.chatserver.domain.user.dto.UserInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +20,7 @@ public class FriendsRelationService {
 
     public List<UserInfoDto> getFriends() {
 
-        UserInfoDto user = userService.getUser();
+        UserInfoDto user = userService.getUserDto();
         return friendsRelationRepository.findByFromUserSeq(user.getUserSeq()).stream()
                 .map(FriendsRelation::getTo)
                 .map(UserInfoDto::new)
@@ -29,7 +29,7 @@ public class FriendsRelationService {
 
     public Long save(Long friendId) {
 
-        UserInfoDto user = userService.getUser();
+        UserInfoDto user = userService.getUserDto();
 
         FriendsRelation entity = friendsRelationRepository.findByFromUserSeqAndToUserSeq(user.getUserSeq(), friendId);
         if (entity != null) {

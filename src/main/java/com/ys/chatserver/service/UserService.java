@@ -2,7 +2,7 @@ package com.ys.chatserver.service;
 
 import com.ys.chatserver.domain.user.User;
 import com.ys.chatserver.domain.user.UserRepository;
-import com.ys.chatserver.web.dto.UserInfoDto;
+import com.ys.chatserver.domain.user.dto.UserInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,11 +16,15 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserInfoDto getUser() {
+    public UserInfoDto getUserDto() {
+        return new UserInfoDto(getUser());
+    }
+
+    public User getUser() {
         org.springframework.security.core.userdetails.User principal =
                 (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        return new UserInfoDto(userRepository.findByUserId(principal.getUsername()));
+        return userRepository.findByUserId(principal.getUsername());
     }
 
     public User getUser(Long userSeq) {

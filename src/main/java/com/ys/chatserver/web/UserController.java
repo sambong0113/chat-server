@@ -1,7 +1,7 @@
 package com.ys.chatserver.web;
 
 import com.ys.chatserver.service.UserService;
-import com.ys.chatserver.web.dto.UserInfoDto;
+import com.ys.chatserver.domain.user.dto.UserInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +22,7 @@ public class UserController {
     public ResponseEntity<UserInfoDto> getUser() {
 
         return ResponseEntity.ok()
-                .body(userService.getUser());
+                .body(userService.getUserDto());
     }
 
     @GetMapping

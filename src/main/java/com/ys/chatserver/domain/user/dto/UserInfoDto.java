@@ -1,4 +1,4 @@
-package com.ys.chatserver.web.dto;
+package com.ys.chatserver.domain.user.dto;
 
 import com.ys.chatserver.domain.user.User;
 import lombok.Builder;
